@@ -82,9 +82,6 @@ void draw () {
   for (Object o : ribosomes) {
     Ribosome r = (Ribosome)o;
     r.draw();
-    if (time_series) {
-      r.drawProfile();
-    }
   }
   for (Object o : profiled) {
     Ribosome r = (Ribosome)o;
