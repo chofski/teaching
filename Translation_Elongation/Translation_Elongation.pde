@@ -1,36 +1,42 @@
 /**
- * Translation Elongation Models
+ * Translation Elongation Model
  * by Thomas E. Gorochowski (23/11/2013)
  * 
  * Simple examples of ribosome movement along an mRNA to illustrate some of 
  * the physical effects that can occur. Includes numerous options to alter
- * aspects of the simulation to show when certain aspects of a model break
- * down e.g., too short initation time can lead to collisions (model does
- * not handle these interactions).
+ * aspects of the simulation and show when certain aspects of a model break
+ * down e.g., too short initation time can lead to collisions and the idea
+ * that slow ramps may help reduce ribosome collisions.
  *
  * CONTROLS:
  * ---------
- *   R     play/pause simulation
- *   C     clears the current simulation data
- *   -/+   decrease/increase initiation time
- *   S     switch between deterministic and stochastic modes
- *   9/0   decrease/increase noise
- *   T     toggle translational speed profile 
+ *   R      play/pause simulation
+ *   C      clears the current simulation data
+ *   -/+    decrease/increase initiation time
+ *   S      switch between deterministic and stochastic modes
+ *   9/0    decrease/increase noise
+ *   I      toggle ribosome interactions
+ *   T      toggle translational speed profile
+ *   A      toggle average translation time statistic
+ *   1/2/3  three scenarios: 1. Normal; 2. Normal + tRNA pool change; 3. Ramp
  */
 import java.util.*;
 
 // The mRNA to be translated
-String mRNA = "AAABBABBABBBBABABCCBCBADBCBABBBBABAAABABBDDBBAAABABBCBAABCCBCBABB";
-// Default translation times for each codon time
-float A_time = 0.1;
-float B_time = 0.5;
-float C_time = 1.5;
-float D_time = 2.5;
+String mRNA = "AAABBABBABBBBBBABCCBCBBDBCBABBBBABAAABABBDDBBAAABABBCBAABCCBCBABB";
+
+// Default translation times for each codon time (condition 1)
+float A_time = 0.6;
+float B_time = 0.8;
+float C_time = 1.0;
+float D_time = 2.6;
 
 // Some global constants
 boolean running = false;
 boolean stochastic = false;
 boolean time_series = false;
+boolean interactions = false;
+boolean avg_ribo_time = true;
 float noise_scale = 0.3;
 float profile_y_scale = 25.0;
 float aa_scale = 11.0;
@@ -38,7 +44,7 @@ float x_indent = 40.0;
 float y_indent = 250.0;
 float rib_width = aa_scale*2.5;
 float rib_height = aa_scale*1.5;
-float time_scale = 0.6;
+float time_scale = 0.2;
 float text_h_indent = 10.0;
 float text_space = 30.0;
 float profile_indent = 1.5*y_indent;
@@ -52,8 +58,8 @@ Vector profiled = new Vector();
  * Set up the simulation window.
  */
 void setup () {
-  size(800, 530);
-  frameRate(24);
+  size(780, 530);
+  frameRate(60);
 } 
 
 /**
@@ -122,6 +128,37 @@ void keyPressed () {
     profiled.clear();
     ribosomes.clear();
     initiator.delay = 1.0;
+  }
+  // Ribosome interactions option
+  if (key == 'I' || key == 'i') {
+    interactions = !interactions;
+  }
+  // Average ribosome translation time option
+  if (key == 'A' || key == 'a') {
+    avg_ribo_time = !avg_ribo_time;
+  }
+  // Different scenarios
+  if (key == '1') {
+    mRNA = "AAABBABBABBBBBBABCCBCBBDBCBABBBBABAAABABBDDBBAAABABBCBAABCCBCBABB";
+    A_time = 0.6;
+    B_time = 0.8;
+    C_time = 1.0;
+    D_time = 2.6;
+  }
+  if (key == '2') {
+    mRNA = "AAABBABBABBBBBBABCCBCBBDBCBABBBBABAAABABBDDBBAAABABBCBAABCCBCBABB";
+    A_time = 3.0;
+    B_time = 0.8;
+    C_time = 1.0;
+    D_time = 2.6;
+  }
+  // 'Ramp' hypothesis to improve robustness of elongation (reduce collisions)
+  if (key == '3') {
+    mRNA = "DDDDDCCCDCCCDCCCBBBABABBAAAAAABBAAAABAAAAAAAAAABBAAAABAAACAAAAAAA";
+    A_time = 0.6;
+    B_time = 0.8;
+    C_time = 2.0;
+    D_time = 3.0;
   }
 }
 
@@ -208,23 +245,45 @@ void drawInfo () {
     text("Deterministic", x_indent, text_h_indent+2.0*text_space);
   }
   text("Initiation time: " + str(initiator.time), x_indent, text_h_indent+3.0*text_space);
+  if (interactions) {
+    text("Interactions: ON", x_indent, text_h_indent+4.0*text_space);
+  } else {
+    text("Interactions: OFF", x_indent, text_h_indent+4.0*text_space);
+  }
   // Draw the codon time information
   setCodonColour('A');
-  ellipse(x_indent + 300, text_h_indent+text_space-7, 14, 14);
-  text(": " + str(A_time), x_indent + 320, text_h_indent+text_space);
+  ellipse(x_indent + 260, text_h_indent+text_space-7, 14, 14);
+  text(": " + str(A_time), x_indent + 280, text_h_indent+text_space);
   setCodonColour('B');
-  ellipse(x_indent + 300, 1.0*text_space+text_h_indent+text_space-7, 14, 14);
-  text(": " + str(B_time), x_indent + 320, 1.0*text_space+text_h_indent+text_space);
+  ellipse(x_indent + 260, 1.0*text_space+text_h_indent+text_space-7, 14, 14);
+  text(": " + str(B_time), x_indent + 280, 1.0*text_space+text_h_indent+text_space);
   setCodonColour('C');
-  ellipse(x_indent + 300, 2.0*text_space+text_h_indent+text_space-7, 14, 14);
-  text(": " + str(C_time), x_indent + 320, 2.0*text_space+text_h_indent+text_space);
+  ellipse(x_indent + 260, 2.0*text_space+text_h_indent+text_space-7, 14, 14);
+  text(": " + str(C_time), x_indent + 280, 2.0*text_space+text_h_indent+text_space);
   setCodonColour('D');
-  ellipse(x_indent + 300, 3.0*text_space+text_h_indent+text_space-7, 14, 14);
-  text(": " + str(D_time), x_indent + 320, 3.0*text_space+text_h_indent+text_space);
+  ellipse(x_indent + 260, 3.0*text_space+text_h_indent+text_space-7, 14, 14);
+  text(": " + str(D_time), x_indent + 280, 3.0*text_space+text_h_indent+text_space);
+  fill(0, 0, 0);
+  // Average translational time information
+  if (avg_ribo_time) {
+    float sumTimes = 0.0;
+    float numRibos = 0;
+    for (Object o : profiled) {
+      Ribosome r = (Ribosome)o;
+      if (r.dead == true) {
+        sumTimes += r.totalTransTime;
+        numRibos += 1.0;
+      }
+    }
+    if (numRibos > 0.0) {
+      text("Average Translation Time: " + str(sumTimes/numRibos), x_indent+360, text_h_indent+text_space); 
+    } else {
+      text("Average Translation Time: N/A" , x_indent+360, text_h_indent+text_space); 
+    }
+  }
   // Label the profile
   if (time_series) {
-    fill(0, 0, 0);
-    text("Translational speed profile:" , x_indent, profile_indent-30); 
+    text("Translational speed profile:", x_indent, profile_indent-30); 
   }
 }
 
@@ -267,6 +326,18 @@ class Initiator {
     delay -= ts;
     // If less that 0 initiate and reset
     if (delay <= 0.0) {
+      if (interactions) {
+        // Check to see if position 1 is occupied
+        for (Object o : ribosomes) {
+          Ribosome r = (Ribosome)o;
+          if (r.pos <= 4) {
+            // Do not add ribosome, wait until free
+            delay = random(time);
+            return;
+          }
+        }
+      }
+      // Add ribosome to the mRNA
       Ribosome newR = new Ribosome(0);
       ribosomes.add(newR);
       delay = time;
@@ -282,6 +353,8 @@ class Initiator {
 class Ribosome {
   public int pos = 0;
   public float delay = 0.0;
+  public float actTime = 0.0;
+  public float totalTransTime = 0.0;
   public boolean dead = false;
   public Vector profile = new Vector();
   public float cR = 60.0;
@@ -291,6 +364,8 @@ class Ribosome {
   public Ribosome (int start_pos) {
     pos = start_pos;
     delay = getCodonTime(start_pos);
+    actTime = 0.0;
+    totalTransTime = 0.0;
     // New ribosomes should have randomly allocate colour to see profiles
     cR = 40.0 + random(170.0);
     cG = 40.0 + random(170.0);
@@ -300,15 +375,29 @@ class Ribosome {
   public void update (float ts) {
     // Subtract delay
     delay -= ts;
+    // Update the actual waiting time
+    actTime += ts;
     if (delay <= 0.0) {
-       pos++;
-       if (pos >= mRNA.length()) {
-         dead = true;
-       }
-       else {
-         delay = getCodonTime(pos);
-         profile.add(new Float(delay));
-       }
+      if (interactions) {
+        // Check to see if next position is occupied
+        for (Object o : ribosomes) {
+          Ribosome r = (Ribosome)o;
+          if (r.pos > pos && r.pos <= pos+5) {
+            // Do not move ribosome, wait until free
+            delay = random(getCodonTime(pos));
+            return;
+          }
+        }
+      }
+      pos++;
+      profile.add(new Float(actTime));
+      totalTransTime += actTime;
+      if (pos >= mRNA.length()) {
+        dead = true;
+      } else {
+        delay = getCodonTime(pos);
+        actTime = 0.0;
+      }
     }
   }
   // Draw the ribosome on the screen
@@ -336,7 +425,7 @@ class Ribosome {
   public void drawProfile () {
     stroke(cR,cG,cB);
     strokeWeight(1.5);
-    float x0 = x_indent+aa_scale;
+    float x0 = x_indent;
     float x1 = 0.0;
     for (int i=1; i<profile.size(); i++) {
       x1 = x0 + aa_scale;
