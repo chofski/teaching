@@ -19,7 +19,7 @@ CONTROLS:
 ---------
    R        play/pause simulation
    C        clears the current simulation data
-   -/+      decrease/increase initiation time
+   -/+      decrease/increase initiation rate
    S        switch between deterministic and stochastic modes
    9/0      decrease/increase noise
    I        toggle ribosome interactions
@@ -27,4 +27,4 @@ CONTROLS:
    A        toggle average translation time statistic
    1/2/3/4  switch between three scenarios: 
               1. Normal; 2. Normal + tRNA pool change; 
-              3. Normal + Slow codon; 4. Ramp
+              3. Normal + slow codon; 4. Ramp
