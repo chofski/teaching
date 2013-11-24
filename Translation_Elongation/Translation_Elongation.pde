@@ -12,7 +12,7 @@
  * ---------
  *   R        play/pause simulation
  *   C        clears the current simulation data
- *   -/+      decrease/increase initiation time
+ *   -/+      decrease/increase initiation rate
  *   S        switch between deterministic and stochastic modes
  *   9/0      decrease/increase noise
  *   I        toggle ribosome interactions
@@ -102,10 +102,10 @@ void keyPressed () {
     running = !running;
   }
   // Initiation time options
-  if (key == '-' || key == '_') {
+  if (key == '+' || key == '=') {
     initiator.setTime(initiator.time*0.9);
   }
-  if (key == '+' || key == '=') {
+  if (key == '-' || key == '_') {
     initiator.setTime(initiator.time*1.1);
   }
   // Noise related options
@@ -251,7 +251,7 @@ void drawInfo () {
   } else {
     text("Deterministic", x_indent, text_h_indent+2.0*text_space);
   }
-  text("Initiation time: " + str(initiator.time), x_indent, text_h_indent+3.0*text_space);
+  text("Initiation rate: " + str(1.0/initiator.time), x_indent, text_h_indent+3.0*text_space);
   if (interactions) {
     text("Interactions: ON", x_indent, text_h_indent+4.0*text_space);
   } else {
