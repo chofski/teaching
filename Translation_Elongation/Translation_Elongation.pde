@@ -10,15 +10,17 @@
  *
  * CONTROLS:
  * ---------
- *   R      play/pause simulation
- *   C      clears the current simulation data
- *   -/+    decrease/increase initiation time
- *   S      switch between deterministic and stochastic modes
- *   9/0    decrease/increase noise
- *   I      toggle ribosome interactions
- *   T      toggle translational speed profile
- *   A      toggle average translation time statistic
- *   1/2/3  three scenarios: 1. Normal; 2. Normal + tRNA pool change; 3. Ramp
+ *   R        play/pause simulation
+ *   C        clears the current simulation data
+ *   -/+      decrease/increase initiation time
+ *   S        switch between deterministic and stochastic modes
+ *   9/0      decrease/increase noise
+ *   I        toggle ribosome interactions
+ *   T        toggle translational speed profiles
+ *   A        toggle average translation time statistic
+ *   1/2/3/4  switch between three scenarios: 
+ *              1. Normal; 2. Normal + tRNA pool change; 
+ *              3. Normal + Slow codon; 4. Ramp
  */
 import java.util.*;
 
@@ -151,6 +153,14 @@ void keyPressed () {
   }
   // 'Ramp' hypothesis to improve robustness of elongation (reduce collisions)
   if (key == '3') {
+    mRNA = "AAABBABBABBBBBBABCCBCBBDBCBABBBBABAAABABBDDBBAAABABBCBAABCCBCBABB";
+    A_time = 0.6;
+    B_time = 0.8;
+    C_time = 1.0;
+    D_time = 30.0;
+  }
+  // 'Ramp' hypothesis to improve robustness of elongation (reduce collisions)
+  if (key == '4') {
     mRNA = "DDDDDCCCDCCCDCCCBBBABABBAAAAAABBAAAABAAAAAAAAAABBAAAABAAACAAAAAAA";
     A_time = 0.6;
     B_time = 0.8;
